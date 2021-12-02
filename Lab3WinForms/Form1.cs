@@ -19,7 +19,7 @@ namespace Lab3WinForms
         {
             InitializeComponent();
 
-            logic = new BusinessLogic(new FileDataSource(@"..\..\bd.bin"));
+            logic = new BusinessLogic(new FileDataSource(@"..\..\..\bd.bin"));
           
             //logic.Save(new SampleEmployeeRecord("Дмитрий Г. Д.;Разработчик;Разработка;50000"));
             //logic.Save(new TempWorkerRecord("Алексей А. Ж.;Разработчик;Разработка;100000;20.12.2022"));
