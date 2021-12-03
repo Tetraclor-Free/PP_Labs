@@ -139,7 +139,7 @@ namespace Lab2ConsoleApp
         {
             for (int i = 0; i < count; i++)
             {
-                if (fileStream.Length < fileStream.Position) return false;
+                if (fileStream.Length <= fileStream.Position) return false;
                 SkipNextRecord();
             }
             return true;
