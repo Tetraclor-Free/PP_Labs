@@ -58,13 +58,23 @@ namespace Lab3WinForms
         {
             DialogResult = DialogResult.OK;
             var humanType = (string)RecordTypesComboBox.SelectedItem;
-            var newRecord = humanTypeToSample[humanType].Clone();
+            dynamic newRecord = humanTypeToSample[humanType].Clone();// dynamic, тип определится во время работы программы
+
             newRecord.id = Record.id;
             
             newRecord.fullname = tableLayoutPanel1.GetControlFromPosition(1, 1).Text;
             newRecord.post = tableLayoutPanel1.GetControlFromPosition(1, 2).Text;
             newRecord.department = tableLayoutPanel1.GetControlFromPosition(1, 3).Text;
             newRecord.salary = int.Parse(tableLayoutPanel1.GetControlFromPosition(1, 4).Text);
+
+            if (newRecord is TempWorkerRecord)
+            {
+                newRecord.dateEnd = DateTime.Parse(tableLayoutPanel1.GetControlFromPosition(1, 5).Text);
+            }
+            else if (newRecord is TraineeRecord)
+            {
+                newRecord.educationInstitution = tableLayoutPanel1.GetControlFromPosition(1, 5).Text;
+            }
             EmployeeRecord = newRecord;
         }
 
