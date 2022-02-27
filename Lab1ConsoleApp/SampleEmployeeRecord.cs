@@ -11,11 +11,6 @@
         {
         }
 
-        public override EmployeeRecord Clone()
-        {
-            return new SampleEmployeeRecord(id, fullname, post, department, salary);
-        }
-
         public override string ToString()
         {
             return $"Обычный работник\n" + base.ToString();

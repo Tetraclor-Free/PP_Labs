@@ -17,11 +17,6 @@ namespace Lab1ConsoleApp
             dateEnd = DateTime.Parse(filds[index + 1]);
         }
 
-        public override EmployeeRecord Clone()
-        {
-            return new TempWorkerRecord(id, fullname, post, department, salary, dateEnd);
-        }
-
         public override string ToString()
         {
             return $"Временный работник\n" + base.ToString() + $"Дата окончания временного договора:{dateEnd}\n"; 

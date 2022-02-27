@@ -29,6 +29,7 @@
             this.salary = salary;
         }
 
+        // Парсим запись и зстроки
         protected EmployeeRecord(string record)
         {
             filds = record.Split(';');
@@ -39,13 +40,22 @@
             index = 3;
         }
 
-        public abstract EmployeeRecord Clone();
+        // Метод для полного клонирования, чтобы не было ссылочной зависисмости
+        public virtual EmployeeRecord Clone() => (EmployeeRecord)MemberwiseClone();
+
+        // Метод для определения типа записи
         public abstract int GetRecordType();
+
+        // Возвращаем длину записи в байтах
         public virtual int GetBitesLength()
         {
             return 2 * 4 + 3 * 100;
         }
 
+        /// <summary>
+        /// Метод записывает поля данного объекта в поток
+        /// </summary>
+        /// <param name="streamWriterHelper"></param>
         public virtual void WriteBites(StreamWriterHelper streamWriterHelper)
         {
             streamWriterHelper.Write(id);
@@ -55,6 +65,10 @@
             streamWriterHelper.Write(salary);
         }
 
+        /// <summary>
+        /// Парсим из потока и записываем поля объекта 
+        /// </summary>
+        /// <param name="streamReaderHelper"></param>
         public virtual void ReadFromBites(StreamReaderHelper streamReaderHelper)
         {
             id = streamReaderHelper.ReadInt();
@@ -64,6 +78,7 @@
             salary = streamReaderHelper.ReadInt();
         }
 
+        //Переопределяем метод для преобразования объекта в строку
         public override string ToString()
         {
             return $"ИД:{id}\nФИО:{fullname}\nДолжность:{post}\nОтдел:{department}\nОклад:{salary}\n";

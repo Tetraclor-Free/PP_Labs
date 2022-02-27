@@ -23,6 +23,7 @@ namespace Lab3WinForms
                 RecordTypesComboBox.Enabled = false;
             record = record ?? new SampleEmployeeRecord(0, "", "", "", 0);
             Record = record;
+            // Определение какие типы записей можно будет выбрать
             var samples = new List<EmployeeRecord>() 
                 {  new SampleEmployeeRecord(), new TempWorkerRecord(), new TraineeRecord()};
             var startItem = "";
@@ -37,6 +38,7 @@ namespace Lab3WinForms
                     humanTypeToSample[type] = record.Clone();
                 }
             }
+            // Инициализация элементов формы
             RecordTypesComboBox.DataSource = humanTypeToSample.Keys.ToList();
             RecordTypesComboBox.SelectedIndexChanged += RecordTypesComboBox_SelectedIndexChanged;
             RecordTypesComboBox.SelectedItem = startItem;
@@ -51,6 +53,7 @@ namespace Lab3WinForms
 
         private void CancelButton_Click(object sender, EventArgs e)
         {
+            // Отмена изменений закрытие формы
             DialogResult = DialogResult.Cancel;
         }
 
@@ -58,15 +61,19 @@ namespace Lab3WinForms
         {
             DialogResult = DialogResult.OK;
             var humanType = (string)RecordTypesComboBox.SelectedItem;
+            // Так как тип может быть любой то используется dynamic
             dynamic newRecord = humanTypeToSample[humanType].Clone();// dynamic, тип определится во время работы программы
 
-            newRecord.id = Record.id;
+            if(RecordTypesComboBox.Enabled == false)
+                newRecord.id = Record.id;
             
+            // Проставляем в поля значения из элементов формы
             newRecord.fullname = tableLayoutPanel1.GetControlFromPosition(1, 1).Text;
             newRecord.post = tableLayoutPanel1.GetControlFromPosition(1, 2).Text;
             newRecord.department = tableLayoutPanel1.GetControlFromPosition(1, 3).Text;
             newRecord.salary = int.Parse(tableLayoutPanel1.GetControlFromPosition(1, 4).Text);
 
+            // В зависимотс от типа записи записываем дополнительные поля 
             if (newRecord is TempWorkerRecord)
             {
                 newRecord.dateEnd = DateTime.Parse(tableLayoutPanel1.GetControlFromPosition(1, 5).Text);
@@ -78,20 +85,31 @@ namespace Lab3WinForms
             EmployeeRecord = newRecord;
         }
 
+        /// <summary>
+        /// Медот для обработки смены типов записи
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private void RecordTypesComboBox_SelectedIndexChanged(object sender, EventArgs e)
         {
             var humanType = (string)RecordTypesComboBox.SelectedItem;
+            // Очищаем все элементы
             tableLayoutPanel1.Controls.Clear();
+            // Создаем новые элементы
             GenerateBaseFileds(Record);
             GenerateExtFields(humanTypeToSample[humanType]);
         }
-
+        /// <summary>
+        /// Создание полей формы для базовый значений записи
+        /// </summary>
+        /// <param name="employeeRecord"></param>
         void GenerateBaseFileds(EmployeeRecord employeeRecord)
         {
             AddLabelInputPair("Id:", new Label() { Text = employeeRecord.id.ToString()});
             AddLabelInputPair("ФИО:", new TextBox() { Text = employeeRecord.fullname, Width = 300 });
             AddLabelInputPair("Должность:", new TextBox() { Text = employeeRecord.post });
 
+            // Создание выпаюдающего списка для удобства пользователя
             var allow = BusinessLogic.allowDepartaments.ToList();
             if(allow.Remove(employeeRecord.department))
                 allow.Insert(0, employeeRecord.department);
@@ -102,8 +120,13 @@ namespace Lab3WinForms
             AddLabelInputPair("Зарплата:", new NumericUpDown() { Maximum = decimal.MaxValue, Value = employeeRecord.salary });
         }
 
+        /// <summary>
+        /// Создание элементов формы для дополнительных полей записи
+        /// </summary>
+        /// <param name="employeeRecord"></param>
         void GenerateExtFields(EmployeeRecord employeeRecord)
         {
+            // В зависимости от класса записи создаются соответсвущие поля
             if (employeeRecord is TempWorkerRecord)
             {
                 var date = (employeeRecord as TempWorkerRecord).dateEnd;
@@ -118,6 +141,11 @@ namespace Lab3WinForms
             }
         }
 
+        /// <summary>
+        /// Вспомогательный метод для добавление пары элементов формы: пояснение - поле ввода 
+        /// </summary>
+        /// <param name="labeltext"></param>
+        /// <param name="inputControl"></param>
         void AddLabelInputPair(string labeltext, Control inputControl)
         {
             tableLayoutPanel1.Controls.Add(new Label() { Text = labeltext });

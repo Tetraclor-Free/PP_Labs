@@ -21,11 +21,6 @@ namespace Lab3WinForms
         {
         }
 
-        public override EmployeeRecord Clone()
-        {
-            return new TempWorkerRecord(id, fullname, post, department, salary, dateEnd);
-        }
-
         public override string ToString()
         {
             return $"Временный работник\n" + base.ToString() + $"Дата окончания временного договора:{dateEnd}\n"; 

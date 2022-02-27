@@ -25,6 +25,7 @@
             this.salary = salary;
         }
 
+        // Парсим запись и зстроки
         protected EmployeeRecord(string record)
         {
             filds = record.Split(';');
@@ -34,8 +35,10 @@
             this.salary =int.Parse(filds[3]);
             index = 3;
         }
+        // Метод для полного клонирования, чтобы не было ссылочной зависисмости
+        public virtual EmployeeRecord Clone() =>(EmployeeRecord)MemberwiseClone();
 
-        public abstract EmployeeRecord Clone();
+        //Переопределяем метод для преобразования записи в строку
         public override string ToString()
         {
             return $"ИД:{id}\nФИО:{fullname}\nДолжность:{post}\nОтдел:{department}\nОклад:{salary}\n";

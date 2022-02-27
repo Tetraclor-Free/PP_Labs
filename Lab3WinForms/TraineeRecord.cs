@@ -19,11 +19,6 @@
         {
         }
 
-        public override EmployeeRecord Clone()
-        {
-            return new TraineeRecord(id, fullname, post, department, salary, educationInstitution);
-        }
-
         public override string ToString()
         {
             return $"Стажер\n" + base.ToString() + $"Учебное заведение:{educationInstitution}\n";
