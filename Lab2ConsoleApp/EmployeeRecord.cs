@@ -41,10 +41,6 @@
 
         public abstract EmployeeRecord Clone();
         public abstract int GetRecordType();
-        public virtual int GetBitesLength()
-        {
-            return 2 * 4 + 3 * 100;
-        }
 
         public virtual void WriteBites(StreamWriterHelper streamWriterHelper)
         {

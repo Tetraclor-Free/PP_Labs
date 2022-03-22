@@ -8,8 +8,8 @@ namespace Lab3WinForms
     public class FileDataSource : IDataSource
     {
         FileStream fileStream;
+        int BytesLength = 500;
         string signature = "nikitaku";
-        Dictionary<int, int> typeToBitesLength = new Dictionary<int, int>();
         Dictionary<int, EmployeeRecord> typeToSample = new Dictionary<int, EmployeeRecord>();
         int currentId = 0;
 
@@ -39,7 +39,6 @@ namespace Lab3WinForms
             var samples = new List<EmployeeRecord>() { new TempWorkerRecord(), new SampleEmployeeRecord(), new TraineeRecord() };
             foreach (var item in samples)
             {
-                typeToBitesLength[item.GetRecordType()] = item.GetBitesLength();
                 typeToSample[item.GetRecordType()] = item;
             }
         }
@@ -66,18 +65,17 @@ namespace Lab3WinForms
 
         public bool Delete(int id)
         {
-            StreamSetStart(); // Идем в начало
-            // Пропускаем все записи с меньшим id
+            // Пропускаем все записи с меньшим id   
             if (SkipRecords(id - 1) == false) return false;
             // Перезаписываем первый байт указывая на то что запись удалена
             fileStream.WriteByte(1);
             fileStream.Flush();
+
             return true;
         }
 
         public EmployeeRecord Get(int id)
         {
-            StreamSetStart(); // В начало
             // Пропускаем все предыдущие записи
             if (SkipRecords(id - 1) == false) return null;
             return ReadNextRecord();
@@ -98,28 +96,18 @@ namespace Lab3WinForms
 
         private EmployeeRecord ReadNextRecord()
         {
-            
-            var deleted = fileStream.ReadByte(); // признак удаления
-            var type = fileStream.ReadByte(); // тип записи
-            if (deleted == 1)
-            {
-                // Если запись помечена как удаленная пропусккаем ее возвращаем null
-                fileStream.Seek(typeToBitesLength[type], SeekOrigin.Current);
-                return null;
-            }
-            else
-            {
-                // Клонируем пустую запись 
-                var record = typeToSample[type].Clone();
-                // Записываем в нее считанные из файла данные 
-                record.ReadFromBites(new StreamReaderHelper(fileStream));
-                return record;
-            }
+            var readerHelper = new StreamReaderHelper(fileStream);
+            var startPos = fileStream.Position;
+            var deletedByte = readerHelper.ReadByte(); // признак удаления
+            var recordTypeByte = readerHelper.ReadByte(); // тип записи
+            var record = typeToSample[recordTypeByte].Clone();     // Клонируем пустую запись 
+            record.ReadFromBites(readerHelper);   // Записываем в нее считанные из файла данные 
+            readerHelper.fileStream.Seek(startPos + BytesLength, SeekOrigin.Begin); // Пропускаем пустое место до следующей записи
+            return deletedByte == 1 ? null : record; // если помечена как удаленная то вернуть null
         }
 
         public EmployeeRecord Save(EmployeeRecord record)
         {
-
             if (record.id == 0) // Если запись новая то добавляем в конец файла иначе обновляем
             {
                 return Append(record);
@@ -151,7 +139,6 @@ namespace Lab3WinForms
        /// <returns></returns>
         private EmployeeRecord Update(EmployeeRecord record)
         {
-            StreamSetStart();
             // Находим запись по id
             if (SkipRecords(record.id - 1) == false) return null;
             var newRecord = record.Clone();
@@ -164,15 +151,18 @@ namespace Lab3WinForms
         /// <param name="record"></param>
         private void WriteRecord(EmployeeRecord record)
         {
-            fileStream.WriteByte(0); // Указание что запись не удалена
-            fileStream.WriteByte((byte)record.GetRecordType()); // указываем тип записи
-            record.WriteBites(new StreamWriterHelper(fileStream)); // Записываем саму запись
-            fileStream.Flush(); // Сохраняем изменения
+            var writerHelper = new StreamWriterHelper(fileStream);
+            writerHelper.WriteByte(0); // Указание что запись не удалена
+            writerHelper.WriteByte((byte)record.GetRecordType()); // указываем тип записи
+            record.WriteBites(writerHelper); // Записываем саму запись
+            writerHelper.WriteVoid(BytesLength - writerHelper.Count);
+            writerHelper.fileStream.Flush(); // Сохраняем изменения
         }
 
         // Пропусккает указанное количество записей начинаю с текущего положения
         private bool SkipRecords(int count)
         {
+            StreamSetStart();
             for (int i = 0; i < count; i++)
             {
                 if (fileStream.Length < fileStream.Position) return false;
@@ -186,10 +176,7 @@ namespace Lab3WinForms
         /// </summary>
         private void SkipNextRecord()
         {
-            var deleted = fileStream.ReadByte();
-            var type = fileStream.ReadByte();
-            var length = typeToBitesLength[type];
-            fileStream.Seek(length, SeekOrigin.Current);
+            fileStream.Seek(BytesLength, SeekOrigin.Current);
         }
 
         /// <summary>
@@ -200,7 +187,7 @@ namespace Lab3WinForms
         {
             StreamSetStart(); // на старт потока
             var count = 0;
-            while (fileStream.Length < fileStream.Position)
+            while (fileStream.Length > fileStream.Position)
             {
                 // Пока есть что читать, пропускаем следующую запись и прибавляем id
                 SkipNextRecord();
@@ -215,7 +202,8 @@ namespace Lab3WinForms
     /// </summary>
     public class StreamWriterHelper
     {
-        FileStream fileStream;
+        public FileStream fileStream;
+        public int Count;
 
         public StreamWriterHelper(FileStream fileStream)
         {
@@ -226,18 +214,35 @@ namespace Lab3WinForms
         {
             var buf = Encoding.Default.GetBytes(value);
             var d = 100 - buf.Length;
-            fileStream.Write(buf);
-            for (int i = 0; i < d; i++) fileStream.WriteByte(0);
+            Write(buf);
+            WriteVoid(d);
+        }
+
+        public void WriteByte(byte b)
+        {
+            Count++;
+            fileStream.WriteByte(b);
+        }
+        
+        public void WriteVoid(int count)
+        {
+            Write(new byte[count]);
         }
 
         public void Write(int value)
         {
-            fileStream.Write(BitConverter.GetBytes(value));
+            Write(BitConverter.GetBytes(value));
         }
 
         public void Write(DateTime value)
         {
-            fileStream.Write(BitConverter.GetBytes(value.ToBinary()));
+            Write(BitConverter.GetBytes(value.ToBinary()));
+        }
+
+        public void Write(byte[] buf)
+        {
+            Count += buf.Length;
+            fileStream.Write(buf);
         }
     }
 
@@ -246,11 +251,16 @@ namespace Lab3WinForms
     /// </summary>
     public class StreamReaderHelper
     {
-        FileStream fileStream;
+        public FileStream fileStream;
 
         public StreamReaderHelper(FileStream fileStream)
         {
             this.fileStream = fileStream;
+        }
+
+        public byte ReadByte()
+        {
+            return (byte)fileStream.ReadByte();
         }
 
         public string ReadString()

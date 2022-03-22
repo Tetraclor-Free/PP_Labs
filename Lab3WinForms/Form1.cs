@@ -21,9 +21,13 @@ namespace Lab3WinForms
 
             logic = new BusinessLogic(new FileDataSource(@"..\..\..\bd.bin"));
 
-            //logic.Save(new SampleEmployeeRecord("Дмитрий Г. Д.;Разработчик;Разработка;50000"));
-            //logic.Save(new TempWorkerRecord("Алексей А. Ж.;Разработчик;Разработка;100000;20.12.2022"));
-            //logic.Save(new TraineeRecord("Александр Ф. Ю.;Стажер;Бухгалтерия;5555;УДГУ"));
+            if(logic.GetAll().Count == 0) // Для теситрования
+            {
+                logic.Save(new SampleEmployeeRecord("Дмитрий Г. Д.;Разработчик;Разработка;50000"));
+                logic.Save(new TempWorkerRecord("Алексей А. Ж.;Разработчик;Разработка;100000;20.12.2022"));
+                logic.Save(new TraineeRecord("Александр Ф. Ю.;Стажер;Бухгалтерия;5555;УДГУ"));
+            }
+  
 
             // Привязываем к событиям обработчики
             AddButton.Click += AddButton_Click;

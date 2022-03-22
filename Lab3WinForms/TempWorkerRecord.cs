@@ -31,11 +31,6 @@ namespace Lab3WinForms
             return 2;
         }
 
-        public override int GetBitesLength()
-        {
-            return base.GetBitesLength() + 8; 
-        }
-
         public override void WriteBites(StreamWriterHelper streamWriterHelper)
         {
             base.WriteBites(streamWriterHelper);

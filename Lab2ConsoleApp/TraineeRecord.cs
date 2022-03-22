@@ -34,11 +34,6 @@
             return 3;
         }
 
-        public override int GetBitesLength()
-        {
-            return base.GetBitesLength() + 100;
-        }
-
         public override void WriteBites(StreamWriterHelper streamWriterHelper)
         {
             base.WriteBites(streamWriterHelper);

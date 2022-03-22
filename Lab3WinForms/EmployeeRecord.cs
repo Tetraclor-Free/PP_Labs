@@ -46,11 +46,6 @@
         // Метод для определения типа записи
         public abstract int GetRecordType();
 
-        // Возвращаем длину записи в байтах
-        public virtual int GetBitesLength()
-        {
-            return 2 * 4 + 3 * 100;
-        }
 
         /// <summary>
         /// Метод записывает поля данного объекта в поток
